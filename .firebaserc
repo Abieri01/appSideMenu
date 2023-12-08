@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "pretocheiroso-fa8e4": {
+      "hosting": {
+        "app": [
+          "pretocheiroso-fa8e4"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "pretocheiroso-fa8e4"
+  }
+}

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
+import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
 @Component({
   selector: 'app-login-form',
   templateUrl: './login-form.component.html',
@@ -15,6 +15,18 @@ export class LoginFormComponent  implements OnInit {
       this.mensagem='As senhas precisam ser iguais!'
     }else{
       this.mensagem='Usuário cadastrado com sucesso!'
+      
+createUserWithEmailAndPassword(this.auth, email, senha)
+  .then((userCredential) => {
+    // Signed up 
+    const user = userCredential.user;
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // ..
+  });
     }
   }
 
@@ -22,8 +34,11 @@ export class LoginFormComponent  implements OnInit {
     console.log(`Usuário: ${email} logado com senha: ${senha} `)
   }
 
-  constructor() { }
+  constructor(private auth:Auth) { }
 
   ngOnInit() {}
 
 }
+
+
+
