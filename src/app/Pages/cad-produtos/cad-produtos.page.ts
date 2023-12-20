@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ref, uploadBytes, Storage, listAll, getDownloadURL } from '@angular/fire/storage';
-import { MaskitoOptions, MaskitoElementPredicateAsync } from '@maskito/core';
-
+import { uploadBytes, ref, Storage, listAll, getDownloadURL } from '@angular/fire/storage';
+import { modalController } from '@ionic/core';
+import { collection, setDoc, doc, Firestore } from '@angular/fire/firestore';
+import { v4 as uuidv4 } from 'uuid';
 @Component({
   selector: 'app-cad-produtos',
   templateUrl: './cad-produtos.page.html',
@@ -10,37 +11,63 @@ import { MaskitoOptions, MaskitoElementPredicateAsync } from '@maskito/core';
 export class CadProdutosPage implements OnInit {
   foto: any
   imageRef: any
-  images:any=[]
-  constructor(private storage:Storage) { }
-
+  images: any = [];
+  imgSrc: any
+  isImg: boolean = false;
+  preco?:string
+  constructor(private storage: Storage, private firestore:Firestore) { }
   ngOnInit() {
     this.listarProdutos()
+    console.log(uuidv4())
   }
-
   carregarFoto(e: any) {
     this.foto = e.target.files[0]
-    this.imageRef = ref(this.storage, `Produtos/${this.foto.name}`)
+    const newName = uuidv4(this.foto.name)
+    this.imageRef = ref(this.storage, `Produtos/${newName}`)
     uploadBytes(this.imageRef, this.foto)
+    setTimeout(() => {
+      this.images=[]
+      this.listarProdutos()
+    }, 2000);
   }
 
-  readonly precoMask: MaskitoOptions = {
-    mask: ['R', '$', ' ', /\d/, /\d/,',', /\d/, /\d/],
-  };
+  valorFormat(preco: any) {
+    const a = Number(preco.value)
+    const b = a.toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+    console.log(b)
+    this.preco=b
+  }
 
-  readonly maskPredicate: MaskitoElementPredicateAsync = async (el) => (el as HTMLIonInputElement).getInputElement();
+  selectImage(img: any, modal: any) {
+    this.imgSrc = img
+    this.isImg = true
+    modal.dismiss()
+    //fechar modal
+  }
 
-  listarProdutos(){
-
+  listarProdutos() {
     const listRef = ref(this.storage, 'Produtos');
     listAll(listRef)
       .then((res) => {
         res.items.forEach((itemRef) => {
-          getDownloadURL(itemRef).then((res)=>{
-         this.images.push(res)
-        })
+          getDownloadURL(itemRef).then((res) => {
+            this.images.push(res)
+          })
         });
       }).catch((error) => {
       });
-      }
+  }
+
+  cadastrarProduto(nomeProduto:any, descProduto:any, precoProduto:any, qtdProduto:any ) {
+    const produto = {
+      nome:nomeProduto,
+      descricao:descProduto,
+      preco:precoProduto,
+      qtd:qtdProduto,
+      image:this.imgSrc,
+    }
+    const document = doc(collection(this.firestore, 'Produtos'));
+    return setDoc(document, produto)
+  }
 
 }

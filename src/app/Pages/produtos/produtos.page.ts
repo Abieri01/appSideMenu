@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { getStorage, ref, listAll, Storage, getDownloadURL } from '@angular/fire/storage';
+import { collection, getDocs, doc, Firestore } from '@angular/fire/firestore';
+
 
 
 @Component({
@@ -8,25 +10,23 @@ import { getStorage, ref, listAll, Storage, getDownloadURL } from '@angular/fire
   styleUrls: ['./produtos.page.scss'],
 })
 export class ProdutosPage implements OnInit {
-images:any=[]
-  constructor(private storage:Storage) { }
+produto:any = [{
+  nome:'',
+  descricao:'',
+  preco:'',
+  qtd:'',
+  image:''
+}]
+  constructor(private storage:Storage, private firestore:Firestore) { }
 
   ngOnInit() {
-    this.listarProdutos()
+    this.listarBanco()
   }
-
-  listarProdutos(){
-
-const listRef = ref(this.storage, 'Produtos');
-listAll(listRef)
-  .then((res) => {
-    res.items.forEach((itemRef) => {
-      getDownloadURL(itemRef).then((res)=>{
-     this.images.push(res)
-    })
+  async listarBanco(){
+    const querysnapshot = await getDocs(collection(this.firestore, 'Produtos'));
+    querysnapshot.forEach((doc) => {
+      console.log(`$(doc.id) => ${doc.data()['nome']}`);
+      this.produto = [...this.produto, {nome: doc.data()['nome'], descricao: doc.data()['descricao'], preco: doc.data()['preco'], qtd: doc.data()['qtd'], image: doc.data()['image']}]
     });
-  }).catch((error) => {
-  });
   }
-  
 }
